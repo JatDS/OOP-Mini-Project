@@ -1,19 +1,21 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+This EarlyBirdTicket Class extends Ticket
  */
 package eventticketregistrationsystem;
 
 public class earlyBirdTicket extends Ticket{
-    private double discount;
+    private int howEarly;/*Number of days of how early ticket is bought; must be between 1-10*/
     
-    public earlyBirdTicket(){
+    public earlyBirdTicket(String ticketId, String eventName, String attendeeName, double basePrice, int howEarly){
     super (ticketId,eventName,attendeeName,basePrice);
-     double discount = 0.2;
-      }
-    @Override
+    setHowEarly(howEarly);
+    }
+    public void setHowEarly(int howEarly){
+        this.howEarly=howEarly;
+    }
     public double calculateFinalPrice(){
-     return basePrice * discount; }
+    return basePrice * (1+(0.5*howEarly/10));
+    }
     
     
     

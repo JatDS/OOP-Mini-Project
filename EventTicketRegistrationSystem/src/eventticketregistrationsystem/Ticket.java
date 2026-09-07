@@ -12,5 +12,23 @@ public abstract class Ticket {
     protected String attendeeName;
     protected double basePrice;
     
+    public Ticket(String ticketId, String eventName, String attendeeName, double basePrice){
+        setTicketId(ticketId);
+        setEventName(eventName);
+        setAttendeeName(attendeeName);
+        setBasePrice(basePrice);
+    }
+    public void setTicketId(String ticketId){
+        this.ticketId=ticketId;
+    }
+    public void setEventName(String eventName){
+        this.eventName=eventName;
+    }
+    public void setAttendeeName(String attendeeName){
+        this.attendeeName=attendeeName;
+    }
+    public void setBasePrice(double basePrice){
+        this.basePrice=basePrice;
+    }
     public double calculateFinalPrice;
 }
