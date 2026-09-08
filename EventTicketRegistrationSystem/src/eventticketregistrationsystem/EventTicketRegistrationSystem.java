@@ -1,4 +1,4 @@
-/*
+    /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
  */
@@ -15,6 +15,8 @@ public class EventTicketRegistrationSystem {
      */
     public static void main(String[] args) {
         // TODO code application logic here
+        RegistrationForm registerForm = new RegistrationForm();
+        registerForm.setVisible(true);
     }
     
 }
