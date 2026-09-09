@@ -3,7 +3,8 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package eventticketregistrationsystem;
-
+import java.sql.*;
+import javax.swing.JOptionPane;
 /**
  *
  * @author USER
@@ -56,10 +57,12 @@ public class RegistrationForm extends javax.swing.JFrame {
 
         btnLogin.setBackground(new java.awt.Color(204, 255, 255));
         btnLogin.setText("Login");
+        btnLogin.addActionListener(this::btnLoginActionPerformed);
 
         btnReset.setBackground(new java.awt.Color(0, 204, 204));
         btnReset.setForeground(new java.awt.Color(255, 255, 255));
         btnReset.setText("Reset");
+        btnReset.addActionListener(this::btnResetActionPerformed);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -135,6 +138,32 @@ public class RegistrationForm extends javax.swing.JFrame {
     private void txtUsernameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtUsernameActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtUsernameActionPerformed
+
+    private void btnResetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnResetActionPerformed
+        // BUTTON used to reset the input box to empty and bring cursor back to username.
+        txtUsername.setText("");
+        pwdPassword.setText("");
+        // set all input box to empty
+        
+        // bring cursor back to username
+        txtUsername.requestFocus();
+    }//GEN-LAST:event_btnResetActionPerformed
+
+    private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
+        // Button for login
+        String username = txtUsername.getText();
+        String password = new String (pwdPassword.getPassword());
+        // login operations and events
+//        String sqlCommand = """
+//                            SELECT * FROM admin WHERE username = ? AND password = ?
+//                            """;
+//        try{
+//            Coonection connect = DatabaseConnection.connect();
+//        
+//        }catch(SQLException e){
+//            JOptionPane.showMessageDialog(this, "Invalid username or password" + e.getMessage());
+//        }
+    }//GEN-LAST:event_btnLoginActionPerformed
 
     /**
      * @param args the command line arguments
