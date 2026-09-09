@@ -14,7 +14,7 @@ public class earlyBirdTicket extends Ticket{
         this.howEarly=howEarly;
     }
     public double calculateFinalPrice(){
-    return basePrice * (1+(0.5*howEarly/10));
+    return basePrice * (1-(0.5*howEarly/10));
     }
     
     
