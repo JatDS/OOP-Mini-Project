@@ -30,5 +30,5 @@ public abstract class Ticket {
     public void setBasePrice(double basePrice){
         this.basePrice=basePrice;
     }
-    public double calculateFinalPrice;
+    public abstract double calculateFinalPrice();
 }

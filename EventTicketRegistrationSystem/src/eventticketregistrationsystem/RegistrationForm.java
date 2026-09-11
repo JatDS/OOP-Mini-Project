@@ -151,8 +151,36 @@ public class RegistrationForm extends javax.swing.JFrame {
 
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
         // Button for login
-        String username = txtUsername.getText();
-        String password = new String (pwdPassword.getPassword());
+String username = txtUsername.getText();
+String password = new String(pwdPassword.getPassword());
+
+String sql = "SELECT * FROM staff WHERE username = ? AND password = ?";
+
+try {
+    java.sql.Connection connect = DatabaseConnection.connect();
+
+    java.sql.PreparedStatement pst =
+            connect.prepareStatement(sql);
+
+    pst.setString(1, username);
+    pst.setString(2, password);
+
+    java.sql.ResultSet rs = pst.executeQuery();
+
+    if(rs.next()){
+        javax.swing.JOptionPane.showMessageDialog(this,
+                "Login Successful!");
+    }else{
+        javax.swing.JOptionPane.showMessageDialog(this,
+                "Invalid Username or Password!");
+    }
+
+    connect.close();
+
+} catch (java.sql.SQLException e) {
+    javax.swing.JOptionPane.showMessageDialog(this,
+            e.getMessage());
+}
         // login operations and events
 //        String sqlCommand = """
 //                            SELECT * FROM admin WHERE username = ? AND password = ?
