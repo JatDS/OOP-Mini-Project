@@ -1,6 +1,5 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
+
  */
 package eventticketregistrationsystem;
 import java.sql.*;
@@ -8,8 +7,7 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
- *
- * @author USER
+
  */
 public class TicketForm extends javax.swing.JFrame {
     
@@ -19,27 +17,31 @@ public class TicketForm extends javax.swing.JFrame {
     // Creates new form TicketForm
     public TicketForm(String username) {
         initComponents();
-        loggedinusername = username;
-        // Default ticket type
-        cmbTicketType.setSelectedIndex(0);
+    this.loggedinusername = username;
+    
+    // Explicitly define a 6-column model to overwrite the NetBeans generated model
+    DefaultTableModel model = new DefaultTableModel(
+        new Object[][]{},
+        new String[]{"Ticket ID", "Event Name", "Attendee Name", "Base Price", "Type", "Final Price"}
+    ) {
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return false; // Keeps table cells non-editable
+        }
+    };
+    tblTicketList.setModel(model);
 
-        // Early Bird is selected by default
-        txtHowEarly.setEnabled(true);
 
-        // VIP fields are disabled
-        txtBackstagePassFee.setEnabled(false);
-        chkParking.setEnabled(false);
 
-        // Default final price
-        lblFinalPrice.setText("Final Price: RM 0.00");
-        
-        loadtickettable();
+    btnResetActionPerformed(null);
+    loadtickettable();
+    setLocationRelativeTo(null);
 
         // Put form in the center of the screen
         setLocationRelativeTo(null);
     }
     private void loadtickettable() {
-    DefaultTableModel tableModel = (DefaultTableModel) tblTicketList.getModel();
+        DefaultTableModel tableModel = (DefaultTableModel) tblTicketList.getModel();
     tableModel.setRowCount(0);
 
     String sqlCommand = "SELECT * FROM ticket ORDER BY ticketId";
@@ -48,14 +50,15 @@ public class TicketForm extends javax.swing.JFrame {
          ResultSet rs = pst.executeQuery()) {
 
         while (rs.next()) {
-            String ticketid = String.valueOf(rs.getInt("ticketId"));
+            // FIX: Read ticketId directly as a String instead of an Integer
+            String ticketid = rs.getString("ticketId"); 
             int ticketType = rs.getInt("ticketType");
             Ticket ticket;
             String typeLabel = (ticketType == 0) ? "Early Bird" : "VIP";
 
             if (ticketType == 0) {
                 ticket = new earlyBirdTicket(ticketid, rs.getString("eventName"), rs.getString("attendeeName"), 
-                                              rs.getDouble("basePrice"), rs.getInt("howEarly"));
+                                             rs.getDouble("basePrice"), rs.getInt("howEarly"));
             } else {
                 ticket = new VIPTicket(ticketid, rs.getString("eventName"), rs.getString("attendeeName"), 
                                        rs.getDouble("basePrice"), rs.getDouble("backstagePassFee"), rs.getInt("parkingAccess") == 1);
@@ -347,26 +350,17 @@ public class TicketForm extends javax.swing.JFrame {
     private void btnCalculateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCalculateActionPerformed
         // TODO add your handling code here:
         try {
-            String id = txtTicketID.getText().trim();
-            String event = txtEventName.getText().trim();
-            String attendee = txtAttendeeName.getText().trim();
-            double price = Double.parseDouble(txtBasePrice.getText().trim());
-
-            Ticket ticket;
-            if (cmbTicketType.getSelectedIndex() == 0) { // Early Bird
-                int howEarly = Integer.parseInt(txtHowEarly.getText().trim());
-                ticket = new earlyBirdTicket(id, event, attendee, price, howEarly);
-            } else { // VIP
-                double fee = Double.parseDouble(txtBackstagePassFee.getText().trim());
-                boolean parking = chkParking.isSelected();
-                ticket = new VIPTicket(id, event, attendee, price, fee, parking);
-            }
-
+            Ticket ticket = constructTicketFromFields();
             lblFinalPrice.setText(String.format("Final Price: RM %.2f", ticket.calculateFinalPrice()));
         } catch (NumberFormatException e) {
             lblFinalPrice.setText("Final Price: RM 0.00");
             if (evt != null) {
-                JOptionPane.showMessageDialog(this, "Please fill in all ticket details with valid numerical values before calculating.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Please enter valid numerical values for price/fees.", "Input Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (IllegalArgumentException e) {
+            lblFinalPrice.setText("Final Price: RM 0.00");
+            if (evt != null) {
+                JOptionPane.showMessageDialog(this, e.getMessage(), "Validation Error", JOptionPane.WARNING_MESSAGE);
             }
         }
     }//GEN-LAST:event_btnCalculateActionPerformed
@@ -391,37 +385,35 @@ public class TicketForm extends javax.swing.JFrame {
         int selectedRow = tblTicketList.getSelectedRow();
         if (selectedRow == -1) return;
 
-        String ticketIdStr = tblTicketList.getValueAt(selectedRow, 0).toString();
-        int ticketId = Integer.parseInt(ticketIdStr);
+        String ticketId = tblTicketList.getValueAt(selectedRow, 0).toString();
 
         String sql = "SELECT * FROM ticket WHERE ticketId = ?";
         try (Connection conn = DatabaseConnection.connect();
              PreparedStatement pst = conn.prepareStatement(sql)) {
 
-            pst.setInt(1, ticketId);
+            pst.setString(1, ticketId);
             try (ResultSet rs = pst.executeQuery()) {
                 if (rs.next()) {
-                    txtTicketID.setText(String.valueOf(rs.getInt("ticketId")));
-                    txtTicketID.setEnabled(false); // Gray out/disable Ticket ID when editing existing record
+                    txtTicketID.setText(rs.getString("ticketId"));
+                    txtTicketID.setEnabled(false);
 
                     txtEventName.setText(rs.getString("eventName"));
                     txtAttendeeName.setText(rs.getString("attendeeName"));
                     txtBasePrice.setText(String.valueOf(rs.getDouble("basePrice")));
 
                     int type = rs.getInt("ticketType");
-                    if (type == 0) { // Early Bird
+                    if (type == 0) {
                         cmbTicketType.setSelectedIndex(0);
                         txtHowEarly.setText(String.valueOf(rs.getInt("howEarly")));
                         txtBackstagePassFee.setText("");
                         chkParking.setSelected(false);
-                    } else { // VIP
+                    } else {
                         cmbTicketType.setSelectedIndex(1);
                         txtHowEarly.setText("");
                         txtBackstagePassFee.setText(String.valueOf(rs.getDouble("backstagePassFee")));
                         chkParking.setSelected(rs.getInt("parkingAccess") == 1);
                     }
 
-                    // Perform price calculation display
                     btnCalculateActionPerformed(null);
                 }
             }
@@ -433,81 +425,62 @@ public class TicketForm extends javax.swing.JFrame {
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
         // TODO add your handling code here:
         try {
-            // Validation check
-            if (txtTicketID.getText().trim().isEmpty() ||
-                txtEventName.getText().trim().isEmpty() ||
-                txtAttendeeName.getText().trim().isEmpty() ||
-                txtBasePrice.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Please fill in all primary ticket fields.", "Validation Warning", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
-            int ticketId = Integer.parseInt(txtTicketID.getText().trim());
-            String eventName = txtEventName.getText().trim();
-            String attendeeName = txtAttendeeName.getText().trim();
-            double basePrice = Double.parseDouble(txtBasePrice.getText().trim());
-            int ticketType = cmbTicketType.getSelectedIndex(); // 0 = Early Bird, 1 = VIP
-
-            Integer howEarly = null;
-            Double backstagePassFee = null;
-            Integer parkingAccess = null;
-
-            if (ticketType == 0) {
-                if (txtHowEarly.getText().trim().isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "Please enter days bought in advance for Early Bird ticket.", "Validation Warning", JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-                howEarly = Integer.parseInt(txtHowEarly.getText().trim());
-            } else {
-                if (txtBackstagePassFee.getText().trim().isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "Please enter backstage pass fee for VIP ticket.", "Validation Warning", JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-                backstagePassFee = Double.parseDouble(txtBackstagePassFee.getText().trim());
-                parkingAccess = chkParking.isSelected() ? 1 : 0;
-            }
+            Ticket ticket = constructTicketFromFields();
+            int ticketType = cmbTicketType.getSelectedIndex();
 
             try (Connection conn = DatabaseConnection.connect()) {
                 int staffId = getStaffId(conn, loggedinusername);
 
                 if (txtTicketID.isEnabled()) {
-                    // CREATE: Insert new record
                     String sqlInsert = """
                         INSERT INTO ticket (ticketId, eventName, attendeeName, basePrice, ticketType, howEarly, backstagePassFee, parkingAccess, whoCreated)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """;
                     try (PreparedStatement pst = conn.prepareStatement(sqlInsert)) {
-                        pst.setInt(1, ticketId);
-                        pst.setString(2, eventName);
-                        pst.setString(3, attendeeName);
-                        pst.setDouble(4, basePrice);
+                        pst.setString(1, ticket.getTicketId());
+                        pst.setString(2, ticket.getEventName());
+                        pst.setString(3, ticket.getAttendeeName());
+                        pst.setDouble(4, ticket.getBasePrice());
                         pst.setInt(5, ticketType);
-                        if (howEarly != null) pst.setInt(6, howEarly); else pst.setNull(6, Types.INTEGER);
-                        if (backstagePassFee != null) pst.setDouble(7, backstagePassFee); else pst.setNull(7, Types.REAL);
-                        if (parkingAccess != null) pst.setInt(8, parkingAccess); else pst.setNull(8, Types.INTEGER);
-                        pst.setInt(9, staffId);
-
+                        
+                        if (ticket instanceof earlyBirdTicket eb) {
+                            pst.setInt(6, eb.getHowEarly());
+                            pst.setNull(7, Types.REAL);
+                            pst.setNull(8, Types.INTEGER);
+                        } else if (ticket instanceof VIPTicket vip) {
+                            pst.setNull(6, Types.INTEGER);
+                            pst.setDouble(7, vip.getBackstagePassFee());
+                            pst.setInt(8, vip.isParkingAccess() ? 1 : 0);
+                        }
+                        
+                        pst.setInt(9, staffId); // whoCreated receives creator's staffId
                         pst.executeUpdate();
                         JOptionPane.showMessageDialog(this, "Ticket registered successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
                     }
                 } else {
-                    // UPDATE: Modify existing record
                     String sqlUpdate = """
                         UPDATE ticket 
                         SET eventName = ?, attendeeName = ?, basePrice = ?, ticketType = ?, howEarly = ?, backstagePassFee = ?, parkingAccess = ?, whoCreated = ?
                         WHERE ticketId = ?
                     """;
                     try (PreparedStatement pst = conn.prepareStatement(sqlUpdate)) {
-                        pst.setString(1, eventName);
-                        pst.setString(2, attendeeName);
-                        pst.setDouble(3, basePrice);
+                        pst.setString(1, ticket.getEventName());
+                        pst.setString(2, ticket.getAttendeeName());
+                        pst.setDouble(3, ticket.getBasePrice());
                         pst.setInt(4, ticketType);
-                        if (howEarly != null) pst.setInt(5, howEarly); else pst.setNull(5, Types.INTEGER);
-                        if (backstagePassFee != null) pst.setDouble(6, backstagePassFee); else pst.setNull(6, Types.REAL);
-                        if (parkingAccess != null) pst.setInt(7, parkingAccess); else pst.setNull(7, Types.INTEGER);
-                        pst.setInt(8, staffId);
-                        pst.setInt(9, ticketId);
 
+                        if (ticket instanceof earlyBirdTicket eb) {
+                            pst.setInt(5, eb.getHowEarly());
+                            pst.setNull(6, Types.REAL);
+                            pst.setNull(7, Types.INTEGER);
+                        } else if (ticket instanceof VIPTicket vip) {
+                            pst.setNull(5, Types.INTEGER);
+                            pst.setDouble(6, vip.getBackstagePassFee());
+                            pst.setInt(7, vip.isParkingAccess() ? 1 : 0);
+                        }
+
+                        pst.setInt(8, staffId);
+                        pst.setString(9, ticket.getTicketId());
                         pst.executeUpdate();
                         JOptionPane.showMessageDialog(this, "Ticket record updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
                     }
@@ -518,7 +491,9 @@ public class TicketForm extends javax.swing.JFrame {
             loadtickettable();
 
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Invalid number format in Ticket ID, Base Price, or category fields.", "Input Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Invalid numerical value entered.", "Input Error", JOptionPane.ERROR_MESSAGE);
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Validation Error", JOptionPane.WARNING_MESSAGE);
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Database operation failed:\n" + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -533,11 +508,11 @@ public class TicketForm extends javax.swing.JFrame {
 
         int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete Ticket ID: " + txtTicketID.getText() + "?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
-            int ticketId = Integer.parseInt(txtTicketID.getText().trim());
+            String ticketId = txtTicketID.getText().trim();
             String sql = "DELETE FROM ticket WHERE ticketId = ?";
             try (Connection conn = DatabaseConnection.connect();
                  PreparedStatement pst = conn.prepareStatement(sql)) {
-                pst.setInt(1, ticketId);
+                pst.setString(1, ticketId);
                 pst.executeUpdate();
                 JOptionPane.showMessageDialog(this, "Ticket deleted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
                 btnResetActionPerformed(null);
@@ -545,9 +520,25 @@ public class TicketForm extends javax.swing.JFrame {
             } catch (SQLException e) {
                 JOptionPane.showMessageDialog(this, "Failed to delete ticket:\n" + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
             }
-        }   
+        }
     }//GEN-LAST:event_btnDeleteActionPerformed
 
+    private Ticket constructTicketFromFields() {//use Ticket and subclasses for standardization via rules implemented in accessors/mutators
+        String id = txtTicketID.getText().trim();
+        String event = txtEventName.getText().trim();
+        String attendee = txtAttendeeName.getText().trim();
+        double price = Double.parseDouble(txtBasePrice.getText().trim());
+
+        if (cmbTicketType.getSelectedIndex() == 0) {
+            int howEarly = Integer.parseInt(txtHowEarly.getText().trim());
+            return new earlyBirdTicket(id, event, attendee, price, howEarly);
+        } else {
+            double fee = Double.parseDouble(txtBackstagePassFee.getText().trim());
+            boolean parking = chkParking.isSelected();
+            return new VIPTicket(id, event, attendee, price, fee, parking);
+        }
+    }
+    
     /**
      * @param args the command line arguments
      */

@@ -17,16 +17,28 @@ public abstract class Ticket {
         setEventName(eventName);
         setAttendeeName(attendeeName);
         setBasePrice(basePrice);
-    }
-    public String getTicketId() {
-        return (ticketId != null) ? ticketId.toUpperCase() : "";
-    }
+        }
+        public String getTicketId() {
+            return (ticketId != null) ? ticketId.toUpperCase() : "";
+        }
 
-    public void setTicketId(String ticketId) {
-        if (ticketId == null || ticketId.trim().length() != 5) {
+        public void setTicketId(String ticketId) {
+            if (ticketId == null || ticketId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Ticket ID cannot be empty.");
+        }
+
+        String trimmed = ticketId.trim();
+
+        // Right-pad short alphanumeric IDs with spaces or trailing zeros without parsing to int
+        if (trimmed.length() < 5) {
+            trimmed = String.format("%-5s", trimmed).replace(' ', '0'); // e.g., "A1" -> "A1000"
+        }
+
+        if (trimmed.length() > 5) {
             throw new IllegalArgumentException("Ticket ID must be exactly 5 characters long.");
         }
-        this.ticketId = ticketId.trim().toUpperCase();
+
+        this.ticketId = trimmed;
     }
 
     public String getEventName() {
