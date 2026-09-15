@@ -5,6 +5,7 @@
 package eventticketregistrationsystem;
 import java.sql.*;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -13,12 +14,12 @@ import javax.swing.JOptionPane;
 public class TicketForm extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(TicketForm.class.getName());
-
+    private String loggedinusername;
     
     // Creates new form TicketForm
-    public TicketForm() {
+    public TicketForm(String username) {
         initComponents();
-        
+        loggedinusername = username;
         // Default ticket type
         cmbTicketType.setSelectedIndex(0);
 
@@ -31,11 +32,73 @@ public class TicketForm extends javax.swing.JFrame {
 
         // Default final price
         lblFinalPrice.setText("Final Price: RM 0.00");
+        
+        loadtickettable();
 
         // Put form in the center of the screen
         setLocationRelativeTo(null);
     }
+    private void loadtickettable(){
+            String sqlCommand = """
+                                SELECT *
+                                FROM ticket
+                                ORDER BY ticketId
+                               """;
+            try {
+                java.sql.Connection connect = DatabaseConnection.connect();
 
+                java.sql.PreparedStatement pst =
+                connect.prepareStatement(sqlCommand);
+
+                java.sql.ResultSet rs = pst.executeQuery();
+            //Get the original table
+            DefaultTableModel tableModel = (DefaultTableModel)tblTicketList.getModel();
+           
+           //Process ticket record
+           while (rs.next()){
+               //Get ticket information
+               String ticketid = rs.getString("ticketID");
+               String eventname = rs.getString("eventName");
+               String attendeename = rs.getString("attendeeName");
+               double baseprice = rs.getDouble("basePrice");
+               double backStagePassFee = rs.getDouble("backStagePassFee");
+               boolean parkingAccess = rs.getBoolean("parkingAccess");
+               String ticketType = rs.getString("ticketType");
+               
+               
+               //Ticket object reference
+               Ticket ticket;
+               Integer howEarly = null;
+               //Process ticket type
+               if (ticketType.equals("earlyBird")){
+                   //collect earlyBird ticket information
+                   howEarly = rs.getInt("howEarly");
+                   ticket = new earlyBirdTicket(ticketid,eventname,attendeename,baseprice,howEarly);
+               }else{
+                   //collect VIP ticket information
+                   double back_stage_passfee = rs.getDouble("backStagePassFee");
+                    int parking_access = rs.getInt("parkingAccess");
+                    //create object Ticket
+                    ticket = new VIPTicket(ticketid,eventname,attendeename,baseprice,backStagePassFee,parkingAccess);
+               }
+               //add ticket information to table
+               tableModel.addRow(new Object[]{
+                ticket.getTicketId(),
+                ticket.getEventName(),
+                ticket.getAttendeeName(),
+                ticket.getBasePrice(),
+                String.format("RM%.2f",ticket.calculateFinalPrice()),
+                });  
+           }
+           rs.close();
+           pst.close();
+           connect.close();
+           }catch (SQLException e){
+               JOptionPane.showMessageDialog(this,"Ticket is not available\n" + e.getMessage(),
+                       "Database Error", JOptionPane.ERROR_MESSAGE);
+           }
+
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -133,6 +196,11 @@ public class TicketForm extends javax.swing.JFrame {
 
             public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
+            }
+        });
+        tblTicketList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblTicketListMouseClicked(evt);
             }
         });
         jScrollPane1.setViewportView(tblTicketList);
@@ -313,6 +381,10 @@ public class TicketForm extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_btnResetActionPerformed
 
+    private void tblTicketListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblTicketListMouseClicked
+    
+    }//GEN-LAST:event_tblTicketListMouseClicked
+
     /**
      * @param args the command line arguments
      */
@@ -335,7 +407,7 @@ public class TicketForm extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> new TicketForm().setVisible(true));
+        java.awt.EventQueue.invokeLater(() -> new TicketForm("username").setVisible(true));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

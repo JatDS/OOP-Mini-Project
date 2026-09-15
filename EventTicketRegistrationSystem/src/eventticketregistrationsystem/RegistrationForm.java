@@ -12,13 +12,14 @@ import javax.swing.JOptionPane;
 public class RegistrationForm extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(RegistrationForm.class.getName());
-
+   
     /**
      * Creates new form RegistrationForm
      */
     public RegistrationForm() {
         initComponents();
         setLocationRelativeTo(null); // make the frame center screen
+        
     }
 
     /**
@@ -170,6 +171,10 @@ try {
     if(rs.next()){
         javax.swing.JOptionPane.showMessageDialog(this,
                 "Login Successful!");
+        TicketForm ticketForm = new TicketForm(username);
+        ticketForm.setVisible(true);
+        
+        this.dispose();
     }else{
         javax.swing.JOptionPane.showMessageDialog(this,
                 "Invalid Username or Password!");
