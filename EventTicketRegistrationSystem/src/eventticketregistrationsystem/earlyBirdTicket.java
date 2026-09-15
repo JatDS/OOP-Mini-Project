@@ -10,11 +10,18 @@ public class earlyBirdTicket extends Ticket{
     super (ticketId,eventName,attendeeName,basePrice);
     setHowEarly(howEarly);
     }
-    public void setHowEarly(int howEarly){
-        this.howEarly=howEarly;
+    public int getHowEarly() {
+        return howEarly;
+    }
+
+    public void setHowEarly(int howEarly) {
+        if (howEarly < 0) {
+            throw new IllegalArgumentException("Days bought in advance (howEarly) cannot be negative.");
+        }
+        this.howEarly = howEarly;
     }
     public double calculateFinalPrice(){
-    return basePrice * (1-(0.5*howEarly/10));
+    return basePrice * (1-(0.5*Math.min(howEarly, 10)/10));//Math.min is for capping howEarly to 10 during calculation
     }
     
     

@@ -15,11 +15,23 @@ public class VIPTicket extends Ticket{
         setBackstagePassFee(backstagePassFee);
         setParkingAccess(parkingAccess);
     }
-    public void setBackstagePassFee(double backstagePassFee){
-        this.backstagePassFee=backstagePassFee;
+    public double getBackstagePassFee() {
+        return backstagePassFee;
     }
-    public void setParkingAccess(boolean parkingAccess){
-        this.parkingAccess=parkingAccess;
+
+    public void setBackstagePassFee(double backstagePassFee) {
+        if (backstagePassFee < 0) {
+            throw new IllegalArgumentException("Backstage pass fee cannot be negative.");
+        }
+        this.backstagePassFee = backstagePassFee;
+    }
+
+    public boolean isParkingAccess() {
+        return parkingAccess;
+    }
+
+    public void setParkingAccess(boolean parkingAccess) {
+        this.parkingAccess = parkingAccess;
     }
     public double calculateFinalPrice(){
         if (parkingAccess){
