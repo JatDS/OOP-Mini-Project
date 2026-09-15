@@ -21,14 +21,33 @@ public abstract class Ticket {
     public void setTicketId(String ticketId){
         this.ticketId=ticketId;
     }
+    
+    public String getTicketId() {
+    return ticketId;
+    }
+    
     public void setEventName(String eventName){
         this.eventName=eventName;
     }
+    
+    public String getEventName() {
+    return eventName;
+    }
+    
     public void setAttendeeName(String attendeeName){
         this.attendeeName=attendeeName;
     }
+    
+    public String getAttendeeName() {
+    return attendeeName;
+    }
+    
     public void setBasePrice(double basePrice){
         this.basePrice=basePrice;
+    }
+    
+    public double getBasePrice() {
+    return basePrice;
     }
     public abstract double calculateFinalPrice();
 }
