@@ -1,13 +1,11 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
+This is the login form. Should be renamed to LoginForm, but whatever
  */
 package eventticketregistrationsystem;
 import java.sql.*;
 import javax.swing.JOptionPane;
 /**
- *
- * @author USER
+
  */
 public class RegistrationForm extends javax.swing.JFrame {
     

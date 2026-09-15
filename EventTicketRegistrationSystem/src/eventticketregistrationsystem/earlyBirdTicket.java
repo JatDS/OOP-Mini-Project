@@ -1,5 +1,5 @@
 /*
-This EarlyBirdTicket Class extends Ticket
+This EarlyBirdTicket Class is a subclass to Ticket
  */
 package eventticketregistrationsystem;
 

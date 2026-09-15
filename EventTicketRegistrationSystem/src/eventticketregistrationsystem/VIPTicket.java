@@ -26,7 +26,7 @@ public class VIPTicket extends Ticket{
         this.backstagePassFee = backstagePassFee;
     }
 
-    public boolean isParkingAccess() {
+    public boolean hasParkingAccess() {
         return parkingAccess;
     }
 

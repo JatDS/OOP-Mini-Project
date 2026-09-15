@@ -23,13 +23,13 @@ public abstract class Ticket {
         }
 
         public void setTicketId(String ticketId) {
-            if (ticketId == null || ticketId.trim().isEmpty()) {
+            if (ticketId == null || ticketId.trim().isEmpty()) {//id must not be null
             throw new IllegalArgumentException("Ticket ID cannot be empty.");
         }
 
-        String trimmed = ticketId.trim();
+        String trimmed = ticketId.trim();//standardize
 
-        // Right-pad short alphanumeric IDs with spaces or trailing zeros without parsing to int
+        // Right-pad short alphanumeric IDs with spaces or trailing zeros (without parsing to int)
         if (trimmed.length() < 5) {
             trimmed = String.format("%-5s", trimmed).replace(' ', '0'); // e.g., "A1" -> "A1000"
         }
@@ -46,10 +46,10 @@ public abstract class Ticket {
     }
 
     public void setEventName(String eventName) {
-        if (eventName == null || eventName.trim().isEmpty()) {
+        if (eventName == null || eventName.trim().isEmpty()) {//must not be null
             throw new IllegalArgumentException("Event name cannot be empty.");
         }
-        this.eventName = eventName.trim();
+        this.eventName = eventName.trim();//standardize
     }
 
     public String getAttendeeName() {
@@ -57,10 +57,10 @@ public abstract class Ticket {
     }
 
     public void setAttendeeName(String attendeeName) {
-        if (attendeeName == null || attendeeName.trim().isEmpty()) {
+        if (attendeeName == null || attendeeName.trim().isEmpty()) {//must not be null
             throw new IllegalArgumentException("Attendee name cannot be empty.");
         }
-        this.attendeeName = attendeeName.trim();
+        this.attendeeName = attendeeName.trim();//standardize
     }
 
     public double getBasePrice() {
@@ -69,7 +69,7 @@ public abstract class Ticket {
 
     public void setBasePrice(double basePrice) {
         if (basePrice < 0) {
-            throw new IllegalArgumentException("Base price cannot be negative.");
+            throw new IllegalArgumentException("Base price cannot be negative.");//obviously
         }
         this.basePrice = basePrice;
     }
