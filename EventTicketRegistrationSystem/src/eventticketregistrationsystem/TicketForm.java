@@ -62,7 +62,7 @@ public class TicketForm extends javax.swing.JFrame {
                String attendeename = rs.getString("attendeeName");
                double baseprice = rs.getDouble("basePrice");
                double backStagePassFee = rs.getDouble("backStagePassFee");
-               double parkingAccess = rs.getDouble("parkingAccess");
+               boolean parkingAccess = rs.getBoolean("parkingAccess");
                String ticketType = rs.getString("ticketType");
                
                
@@ -82,14 +82,13 @@ public class TicketForm extends javax.swing.JFrame {
                     ticket = new VIPTicket(ticketid,eventname,attendeename,baseprice,backStagePassFee,parkingAccess);
                }
                //add ticket information to table
-               tableModel.addRow(new Object[]){
-                ticket.getTicketId();
-                ticket.getEventName();
-                ticket.getAttendeeName();
-                ticket.getBasePrice();
-                ticket.getTicketType(); 
-                String.format("RM%.2f",ticket.calculateFinalPrice());
-           }  
+               tableModel.addRow(new Object[]{
+                ticket.getTicketId(),
+                ticket.getEventName(),
+                ticket.getAttendeeName(),
+                ticket.getBasePrice(),
+                String.format("RM%.2f",ticket.calculateFinalPrice()),
+                });  
            }
            rs.close();
            pst.close();
